@@ -5,6 +5,7 @@ import { TextLinkRenderer, Stack, Text, TextLink, Box } from '../';
 const docs: ComponentDocs = {
   category: 'Content',
   screenshotWidths: [320],
+  explore: false,
   description: (
     <Stack space="large">
       <Text>

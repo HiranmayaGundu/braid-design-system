@@ -69,6 +69,8 @@ export const Navigation = ({ children }: NavigationProps) => {
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
 
   const location = useLocation();
+  const isExploreRoute = location.pathname === '/explore';
+
   useEffect(() => setDirection(null), [location]);
 
   useInterval(() => {
@@ -90,44 +92,61 @@ export const Navigation = ({ children }: NavigationProps) => {
 
   return (
     <ContentBlock width="large">
-      <Box position="fixed" top={0}>
+      <Box
+        position="fixed"
+        top={0}
+        zIndex={isExploreRoute ? 1 : undefined}
+        background={isExploreRoute ? 'body' : undefined}
+        borderRadius={isExploreRoute ? 'standard' : undefined}
+        boxShadow={isExploreRoute ? 'medium' : undefined}
+      >
         <Header
           menuOpen={isMenuOpen}
           menuClick={() => setMenuOpen(!isMenuOpen)}
         />
       </Box>
 
-      <RemoveScroll enabled={isMenuOpen} forwardProps>
-        <FixedContentBlock
-          overflow="auto"
-          bottom={0}
-          paddingY="small"
-          paddingX={gutterSize}
-          paddingBottom="xxlarge"
-          width="full"
-          display={[isMenuOpen ? 'block' : 'none', 'block']}
-          zIndex="sticky"
-          background="body"
-          className={[
-            styles.subNavigationContainer,
-            isMenuOpen ? styles.isOpen : undefined,
-          ]}
-        >
-          <SubNavigation onSelect={() => setMenuOpen(false)} />
-        </FixedContentBlock>
-      </RemoveScroll>
+      <Box
+        opacity={isExploreRoute ? 0 : undefined}
+        pointerEvents={isExploreRoute ? 'none' : undefined}
+        transition="fast"
+      >
+        <RemoveScroll enabled={isMenuOpen} forwardProps>
+          <FixedContentBlock
+            overflow="auto"
+            bottom={0}
+            paddingY="small"
+            paddingX={gutterSize}
+            paddingBottom="xxlarge"
+            width="full"
+            display={[isMenuOpen ? 'block' : 'none', 'block']}
+            zIndex="sticky"
+            background="body"
+            className={[
+              styles.subNavigationContainer,
+              isMenuOpen ? styles.isOpen : undefined,
+            ]}
+          >
+            <SubNavigation onSelect={() => setMenuOpen(false)} />
+          </FixedContentBlock>
+        </RemoveScroll>
+      </Box>
 
       <Box
-        background="card"
+        background={!isExploreRoute ? 'card' : undefined}
         position="relative"
         paddingY={['small', 'xxsmall']}
         paddingX={[gutterSize, gutterSize, 'xxlarge']}
         marginBottom="xxlarge"
         transition="fast"
         pointerEvents={isMenuOpen ? 'none' : undefined}
-        className={[styles.pageContent, isMenuOpen ? styles.isOpen : undefined]}
+        className={[
+          styles.pageContent,
+          !isExploreRoute && styles.subNavOffsetAboveMobile,
+          isMenuOpen ? styles.isOpen : undefined,
+        ]}
         style={{
-          background: bodyBackground,
+          background: !isExploreRoute ? bodyBackground : undefined,
         }}
       >
         {children}

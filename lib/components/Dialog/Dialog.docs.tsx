@@ -46,6 +46,7 @@ const docs: ComponentDocs = {
       label: 'Default',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -71,6 +72,7 @@ const docs: ComponentDocs = {
       label: 'With illustration/logo',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -111,6 +113,7 @@ const docs: ComponentDocs = {
       label: 'With additional description',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -143,6 +146,7 @@ const docs: ComponentDocs = {
       label: 'Sized to content',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -171,6 +175,7 @@ const docs: ComponentDocs = {
       label: 'Xsmall width',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -208,6 +213,7 @@ const docs: ComponentDocs = {
       label: 'Small width',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -245,6 +251,7 @@ const docs: ComponentDocs = {
       label: 'Medium width',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -282,6 +289,7 @@ const docs: ComponentDocs = {
       label: 'Large width',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -319,6 +327,7 @@ const docs: ComponentDocs = {
       label: 'With additional description',
       playroom: false,
       storybook: false,
+      explore: false,
       Example: () => {
         const [open, setOpen] = useState(false);
 
@@ -352,6 +361,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Default',
       docsSite: false,
+      explore: true,
       Example: () => (
         <DialogCard
           id="default"
@@ -366,6 +376,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: With illustration/logo',
       docsSite: false,
+      explore: true,
       Example: () => (
         <DialogCard
           id="illustrated"
@@ -394,6 +405,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Description',
       docsSite: false,
+      explore: true,
       Example: () => (
         <DialogCard
           id="description"
@@ -411,6 +423,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Content width',
       docsSite: false,
+      explore: true,
       Example: () => (
         <Box display="flex" alignItems="center" justifyContent="center">
           <DialogCard
@@ -428,6 +441,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Xsmall width',
       docsSite: false,
+      explore: true,
       Example: () => (
         <DialogCard
           id="xsmall"
@@ -443,6 +457,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Small width',
       docsSite: false,
+      explore: true,
       Example: () => (
         <DialogCard
           id="small"
@@ -458,6 +473,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Medium width',
       docsSite: false,
+      explore: true,
       Example: () => (
         <DialogCard
           id="medium"
@@ -473,6 +489,7 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Large width',
       docsSite: false,
+      explore: true,
       Example: () => (
         <DialogCard
           id="large"

@@ -46,7 +46,7 @@ const hideOnMobileWhenClosed = style(({ breakpoint }) => ({
   },
 }));
 
-const subNavOffsetAboveMobile = style(({ utils, grid, space }) =>
+export const subNavOffsetAboveMobile = style(({ utils, grid, space }) =>
   utils.responsiveStyle({
     tablet: {
       marginLeft: menuWidth - grid * space[gutterSize],
@@ -60,11 +60,7 @@ export const subNavigationContainer = [
   hideOnMobileWhenClosed,
 ];
 
-export const pageContent = [
-  headerOffset,
-  subNavOffsetAboveMobile,
-  hideOnMobileWhenOpen,
-];
+export const pageContent = [headerOffset, hideOnMobileWhenOpen];
 
 globalStyle('html, body', {
   margin: 0,

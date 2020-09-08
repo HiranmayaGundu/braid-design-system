@@ -104,7 +104,6 @@ export const SubNavigation = ({ onSelect }: SubNavigationProps) => {
           {
             name: 'Releases',
             path: '/releases',
-            badge: 'New',
             onClick: onSelect,
           },
           {
@@ -114,6 +113,11 @@ export const SubNavigation = ({ onSelect }: SubNavigationProps) => {
           {
             name: 'GitHub',
             path: 'https://github.com/seek-oss/braid-design-system',
+          },
+          {
+            name: 'Explore',
+            path: '/explore',
+            badge: 'New',
           },
         ]}
       />

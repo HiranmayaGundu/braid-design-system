@@ -17,6 +17,7 @@ import foundations from './routes/foundations';
 import examples from './routes/examples';
 import components from './routes/components';
 import releaseNotes from './routes/releases';
+import explore from './routes/explore';
 import { AppMeta } from './Seo/AppMeta';
 
 const CustomLink = makeLinkComponent(
@@ -64,6 +65,7 @@ export const App = () => (
                   ...examples,
                   ...components,
                   ...releaseNotes,
+                  ...explore,
                 },
                 (routeProps, path) => (
                   <Route key={path} {...routeProps} path={path} />

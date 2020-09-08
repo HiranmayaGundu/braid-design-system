@@ -29,6 +29,7 @@ export const Overlay = ({
   onlyVisibleForKeyboardNavigation = false,
   className,
   children,
+  style,
 }: OverlayProps) => (
   <Box
     position="absolute"
@@ -47,6 +48,7 @@ export const Overlay = ({
       onlyVisibleForKeyboardNavigation ? hideFocusRingsClassName : null,
       className,
     ]}
+    style={style}
   >
     {children}
   </Box>

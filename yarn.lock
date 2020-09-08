@@ -1735,6 +1735,11 @@
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
 
+"@panzoom/panzoom@^4.3.1":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@panzoom/panzoom/-/panzoom-4.3.1.tgz#1a1e7f47a9527b85956d8fc5b2987e8251005dc5"
+  integrity sha512-VbxaSdJzDelt0nDHMLql6DDoHZWsmtQYD1XjJwVwy85MK093PzUby/g396wxc/0ONH2Br9rJ/nX6wTN0ST5pXA==
+
 "@pmmmwh/react-refresh-webpack-plugin@^0.4.0":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@pmmmwh/react-refresh-webpack-plugin/-/react-refresh-webpack-plugin-0.4.1.tgz#a4db0ed8e58c2f8566161c9a8cdf1d095c9a891b"
