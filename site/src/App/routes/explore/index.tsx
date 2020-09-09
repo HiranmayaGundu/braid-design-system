@@ -23,22 +23,15 @@ import { useThemeSettings } from '../../ThemeSetting';
 import { Logo } from '../../Logo/Logo';
 import { IconButton } from '../../../../../lib/components/iconButtons/IconButton';
 import { useStyles } from 'sku/react-treat';
-import { exploreRows, ExploreRow } from './ExploreComponent';
+import { Explore } from './ExploreComponent';
 import { ExplorePanel } from './ExplorePanel';
 import * as styleRefs from './explore.treat';
 import { pointSize } from './exploreMapPointSize';
-import { throttle } from 'lodash';
 
 interface State {
   ready: boolean;
   scale: number;
-  mapPosX: number;
-  mapPosY: number;
-  focalPointOffsetX: number;
-  focalPointOffsetY: number;
-  mapScale: number;
-  mapHeight: number;
-  mapWidth: number;
+  initialScale: number;
   width: number;
   height: number;
 }
@@ -49,6 +42,7 @@ type Action =
       payload: {
         width: number;
         height: number;
+        scale: number;
       };
     }
   | { type: 'PAN'; payload: { x: number; y: number } }
@@ -60,71 +54,47 @@ type Action =
 const initialState: State = {
   ready: false,
   scale: 1,
-  mapPosX: 0,
-  mapPosY: 0,
-  focalPointOffsetX: 0,
-  focalPointOffsetY: 0,
-  mapScale: 1,
-  mapHeight: 0,
-  mapWidth: 0,
+  initialScale: 1,
   width: 0,
   height: 0,
 };
 
-const MAP_EDGE_TRESHOLD = 8;
-const MAP_SIZE = 200;
-
 const reducer = (state: State, action: Action): State => {
-  console.log(action);
+  // console.log(action);
   switch (action.type) {
     case 'INITIALISE': {
-      const { width, height } = action.payload;
-
-      const isWide = width > height;
-      const mapScale = MAP_SIZE / (isWide ? width : height);
-      const mapWidth = isWide ? MAP_SIZE : width * mapScale;
-      const mapHeight = isWide ? height * mapScale : MAP_SIZE;
+      const { width, height, scale } = action.payload;
 
       return {
         ...state,
         width,
         height,
-        focalPointOffsetX: width / 2,
-        focalPointOffsetY: height / 2,
-        mapPosX: (width * mapScale) / 2,
-        mapPosY: (height * mapScale) / 2,
-        mapScale,
-        mapHeight,
-        mapWidth,
+        scale,
+        initialScale: scale,
       };
     }
     case 'RESET': {
       return {
         ...state,
-        mapPosX: state.focalPointOffsetX * state.mapScale,
-        mapPosY: state.focalPointOffsetY * state.mapScale,
-        scale: 1,
+        scale: state.initialScale,
       };
     }
     case 'PAN': {
       const { x, y } = action.payload;
+      console.log(x, y);
 
       return {
         ...state,
-        mapPosX: (state.focalPointOffsetX - x) * state.mapScale,
-        mapPosY: (state.focalPointOffsetY - y) * state.mapScale,
       };
     }
     case 'ZOOM_WHEEL':
     case 'ZOOM_IN':
     case 'ZOOM_OUT':
-      const { x, y } = action.payload;
+      const { scale, x, y } = action.payload;
 
       return {
         ...state,
-        scale: action.payload.scale,
-        mapPosX: (state.focalPointOffsetX - x) * state.mapScale,
-        mapPosY: (state.focalPointOffsetY - y) * state.mapScale,
+        scale,
       };
     default:
       return state;
@@ -138,7 +108,7 @@ interface PanEvent extends Event {
   };
 }
 
-const Explore = () => {
+const ExplorePage = () => {
   const styles = useStyles(styleRefs);
   const contentRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
@@ -160,7 +130,18 @@ const Explore = () => {
 
   const zoomIn = useCallback(() => {
     if (panzoomRef.current) {
-      const { scale, x, y } = panzoomRef.current.zoomIn();
+      const s = panzoomRef.current.getScale();
+      const { scale, x, y } = panzoomRef.current.zoomIn({
+        focal: {
+          x: 0,
+          y: -(contentRef.current.scrollHeight * s) / 2,
+        },
+      });
+      console.log(
+        contentRef.current.scrollHeight,
+        s,
+        -(contentRef.current.scrollHeight * s) / 2,
+      );
 
       dispatch({
         type: 'ZOOM_IN',
@@ -171,7 +152,18 @@ const Explore = () => {
 
   const zoomOut = useCallback(() => {
     if (panzoomRef.current) {
-      const { scale, x, y } = panzoomRef.current.zoomOut();
+      const s = panzoomRef.current.getScale();
+      const { scale, x, y } = panzoomRef.current.zoomOut({
+        focal: {
+          x: 0,
+          y: -(contentRef.current.scrollHeight * s) / 2,
+        },
+      });
+      console.log(
+        contentRef.current.scrollHeight,
+        s,
+        -(contentRef.current.scrollHeight * s) / 2,
+      );
 
       dispatch({
         type: 'ZOOM_OUT',
@@ -190,8 +182,30 @@ const Explore = () => {
       const containerElement = containerRef.current;
       const contentElement = contentRef.current;
 
+      const isWide = contentElement.scrollWidth > contentElement.scrollHeight;
+      const startScale = isWide
+        ? document.documentElement.clientWidth / contentElement.scrollWidth
+        : document.documentElement.clientHeight / contentElement.scrollHeight;
+
+      const startY =
+        -(
+          contentElement.scrollHeight / startScale -
+          contentElement.scrollHeight
+        ) / 2;
+
+      const startX =
+        (-(
+          contentElement.scrollWidth / startScale -
+          contentElement.scrollWidth
+        ) /
+          2) *
+        startScale;
+
       panzoomRef.current = panzoom(contentElement, {
         canvas: true,
+        startScale,
+        startY,
+        startX,
       });
 
       dispatch({
@@ -199,6 +213,7 @@ const Explore = () => {
         payload: {
           width: contentElement.scrollWidth,
           height: contentElement.scrollHeight,
+          scale: startScale,
         },
       });
 
@@ -241,6 +256,7 @@ const Explore = () => {
       return () => {
         containerElement.removeEventListener('wheel', zoomWheel);
         contentElement.removeEventListener('panzoomend', updateMapLocation);
+        panzoomRef.current?.destroy();
       };
     }
   }, [startRendering]);
@@ -251,16 +267,10 @@ const Explore = () => {
   //   }, 500);
   // }, []);
 
-  const { mapWidth, mapHeight, mapPosX, mapPosY } = state;
-
-  const minX = MAP_EDGE_TRESHOLD + pointSize / 2;
-  const maxX = mapWidth - MAP_EDGE_TRESHOLD - pointSize / 2;
-
-  const minY = MAP_EDGE_TRESHOLD;
-  const maxY = mapHeight - MAP_EDGE_TRESHOLD;
-
   return (
     <Box position="fixed" top={0} bottom={0} left={0} right={0}>
+      <PageTitle title="Explore" />
+
       {/* Components */}
       {startRendering ? (
         <Box
@@ -268,14 +278,14 @@ const Explore = () => {
           transition="fast"
           opacity={themeReady ? undefined : 0}
         >
-          <Box ref={contentRef}>
-            <PageTitle title="Explore" />
-            <Box style={{ width: '100vw', height: '100vh' }}>
+          <Box ref={contentRef} boxShadow="borderPositive">
+            <Box
+              style={{ width: 4000, height: 4000 }}
+              boxShadow="borderCritical"
+            >
               <IconLanguage size="fill" />
             </Box>
-            {/* {exploreRows.map((row, index) => (
-              <ExploreRow items={row} key={index} />
-            ))} */}
+            {/* <Explore /> */}
           </Box>
         </Box>
       ) : null}
@@ -320,30 +330,6 @@ const Explore = () => {
             </Inline>
           </Box>
         </ExplorePanel>
-
-        <ExplorePanel bottom left height={mapHeight} width={mapWidth}>
-          <Box
-            position="absolute"
-            transition="fast"
-            style={{
-              transform: `translate(
-                clamp(${minX}px, ${mapPosX}px, ${maxX}px),
-                clamp(${minY}px, ${mapPosY}px, ${maxY}px)
-              )`,
-            }}
-          >
-            <Box position="absolute" className={styles.locationPin}>
-              <IconLocation tone="formAccent" size="small" />
-            </Box>
-            <Box
-              position="relative"
-              background="formAccent"
-              borderRadius="full"
-              zIndex={0}
-              className={styles.locationPoint}
-            />
-          </Box>
-        </ExplorePanel>
       </Box>
     </Box>
   );
@@ -352,7 +338,7 @@ const Explore = () => {
 const page: Page = {
   title: 'Explore',
   exact: true,
-  component: Explore,
+  component: ExplorePage,
 };
 
 export default {

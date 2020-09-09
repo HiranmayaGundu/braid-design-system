@@ -1,4 +1,4 @@
-import React, { Fragment, ReactNode } from 'react';
+import React, { Fragment, ReactNode, memo } from 'react';
 
 import {
   Stack,
@@ -36,7 +36,7 @@ const explorableComponents = documentedComponents
   }));
 
 const rowLength = Math.floor(Math.sqrt(explorableComponents.length)) * 2;
-export const exploreRows = chunk(explorableComponents, rowLength);
+const exploreRows = chunk(explorableComponents, rowLength);
 
 const ExploreComponent = ({
   component,
@@ -120,3 +120,11 @@ export const ExploreRow = ({
     ))}
   </Columns>
 );
+
+export const Explore = memo(() => (
+  <Fragment>
+    {exploreRows.map((row, index) => (
+      <ExploreRow items={row} key={index} />
+    ))}
+  </Fragment>
+));
