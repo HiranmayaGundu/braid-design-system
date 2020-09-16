@@ -11,25 +11,34 @@ import React, {
 } from 'react';
 import { useStyles } from 'sku/react-treat';
 import flattenChildren from 'react-keyed-flatten-children';
-import { MenuItem, MenuItemLink, Box } from '../';
+import {
+  MenuItem,
+  MenuItemCheckbox,
+  MenuItemLink,
+  MenuItemDivider,
+  Box,
+} from '../';
 import { BoxProps } from '../Box/Box';
 import { normalizeKey } from '../private/normalizeKey';
 import { getNextIndex } from '../private/getNextIndex';
 import { Overlay } from '../private/Overlay/Overlay';
 import { actionTypes, Action } from './MenuRenderer.actions';
+import { MenuRendererContext } from './MenuRendererContext';
 import buildDataAttributes, {
   DataAttributeMap,
 } from '../private/buildDataAttributes';
 import * as styleRefs from './MenuRenderer.treat';
 
-interface MenuContextValues {
+interface MenuRendererItemContextValues {
   isHighlighted: boolean;
   index: number;
   dispatch: (action: Action) => void;
   focusTrigger: () => void;
 }
 
-export const MenuContext = createContext<MenuContextValues | null>(null);
+export const MenuRendererItemContext = createContext<MenuRendererItemContextValues | null>(
+  null,
+);
 
 interface TriggerProps {
   'aria-haspopup': boolean;
@@ -82,6 +91,13 @@ const initialState: State = {
   open: false,
   highlightIndex: CLOSED_INDEX,
 };
+
+const isDivider = (node: ReactNode) =>
+  typeof node === 'object' &&
+  node !== null &&
+  'type' in node &&
+  node.type === MenuItemDivider;
+
 export const MenuRenderer = ({
   onOpen,
   onClose,
@@ -95,15 +111,19 @@ export const MenuRenderer = ({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const hasOpened = useRef<boolean>(false);
   const items = flattenChildren(children);
+  const itemCount = items.filter((item) => !isDivider(item)).length;
 
   assert(
     items.every(
       (item) =>
         typeof item === 'object' &&
         'type' in item &&
-        (item.type === MenuItem || item.type === MenuItemLink),
+        (item.type === MenuItem ||
+          item.type === MenuItemCheckbox ||
+          item.type === MenuItemLink ||
+          item.type === MenuItemDivider),
     ),
-    'All child nodes within a menu component must be a MenuItem or MenuItemLink: https://seek-oss.github.io/braid-design-system/components/MenuItem',
+    'All child nodes within a menu component must be a MenuItem, MenuItemLink, MenuItemCheckbox or MenuItemDivider: https://seek-oss.github.io/braid-design-system/components/MenuRenderer',
   );
 
   const [{ open, highlightIndex }, dispatch] = useReducer(
@@ -114,11 +134,7 @@ export const MenuRenderer = ({
           return {
             ...state,
             open: true,
-            highlightIndex: getNextIndex(
-              -1,
-              state.highlightIndex,
-              items.length,
-            ),
+            highlightIndex: getNextIndex(-1, state.highlightIndex, itemCount),
           };
         }
         case MENU_TRIGGER_DOWN:
@@ -126,7 +142,7 @@ export const MenuRenderer = ({
           return {
             ...state,
             open: true,
-            highlightIndex: getNextIndex(1, state.highlightIndex, items.length),
+            highlightIndex: getNextIndex(1, state.highlightIndex, itemCount),
           };
         }
         case BACKDROP_CLICK:
@@ -137,7 +153,16 @@ export const MenuRenderer = ({
         case MENU_ITEM_ENTER:
         case MENU_ITEM_SPACE:
         case MENU_ITEM_CLICK: {
-          return { ...state, open: false, highlightIndex: CLOSED_INDEX };
+          // Don't close the menu if the user clicked a "form element" item, e.g. checkbox
+          if ('formElement' in action && action.formElement) {
+            return state;
+          }
+
+          return {
+            ...state,
+            open: false,
+            highlightIndex: CLOSED_INDEX,
+          };
         }
         case MENU_ITEM_HOVER: {
           return { ...state, highlightIndex: action.value };
@@ -249,65 +274,78 @@ export const MenuRenderer = ({
     },
   };
 
+  let dividerCount = 0;
+
   return (
-    <Box className={styles.root} {...buildDataAttributes(data)}>
-      <Box display="inlineBlock" position="relative">
-        {trigger(triggerProps, { open })}
+    <MenuRendererContext.Provider value={true}>
+      <Box className={styles.root} {...buildDataAttributes(data)}>
+        <Box display="inlineBlock" position="relative">
+          {trigger(triggerProps, { open })}
 
-        <Box
-          role="menu"
-          position="absolute"
-          zIndex="dropdown"
-          onMouseLeave={() => {
-            dispatch({ type: MENU_MOUSE_LEAVE });
-            focusTrigger();
-          }}
-          boxShadow="medium"
-          borderRadius="standard"
-          background="card"
-          marginTop={offsetSpace}
-          transition="fast"
-          right={align === 'right' ? 0 : undefined}
-          opacity={!open ? 0 : undefined}
-          className={!open && styles.menuIsClosed}
-        >
-          <Box paddingY="xxsmall">
-            {items.map((item, index) => (
-              <MenuContext.Provider
-                key={index}
-                value={{
-                  isHighlighted: index === highlightIndex,
-                  index,
-                  dispatch,
-                  focusTrigger,
-                }}
-              >
-                {item}
-              </MenuContext.Provider>
-            ))}
-          </Box>
-          <Overlay
-            boxShadow="borderStandard"
+          <Box
+            role="menu"
+            position="absolute"
+            zIndex="dropdown"
+            onMouseLeave={() => {
+              dispatch({ type: MENU_MOUSE_LEAVE });
+              focusTrigger();
+            }}
+            boxShadow="medium"
             borderRadius="standard"
-            className={styles.showOverlay}
-          />
-        </Box>
-      </Box>
+            background="card"
+            marginTop={offsetSpace}
+            transition="fast"
+            right={align === 'right' ? 0 : undefined}
+            opacity={!open ? 0 : undefined}
+            className={!open && styles.menuIsClosed}
+          >
+            <Box padding="xxsmall">
+              {items.map((item, i) => {
+                if (isDivider(item)) {
+                  dividerCount++;
+                  return item;
+                }
 
-      {open ? (
-        <Box
-          onClick={(event) => {
-            event.stopPropagation();
-            event.preventDefault();
-            dispatch({ type: BACKDROP_CLICK });
-          }}
-          position="fixed"
-          zIndex="dropdownBackdrop"
-          top={0}
-          left={0}
-          className={styles.backdrop}
-        />
-      ) : null}
-    </Box>
+                const menuItemIndex = i - dividerCount;
+
+                return (
+                  <MenuRendererItemContext.Provider
+                    key={menuItemIndex}
+                    value={{
+                      isHighlighted: menuItemIndex === highlightIndex,
+                      index: menuItemIndex,
+                      dispatch,
+                      focusTrigger,
+                    }}
+                  >
+                    {item}
+                  </MenuRendererItemContext.Provider>
+                );
+              })}
+            </Box>
+            <Overlay
+              boxShadow="borderStandard"
+              borderRadius="standard"
+              className={styles.showOverlay}
+            />
+          </Box>
+        </Box>
+
+        {open ? (
+          <Box
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              dispatch({ type: BACKDROP_CLICK });
+            }}
+            position="fixed"
+            zIndex="dropdownBackdrop"
+            top={0}
+            left={0}
+            className={styles.backdrop}
+          />
+        ) : null}
+      </Box>
+    </MenuRendererContext.Provider>
   );
 };

@@ -16,7 +16,6 @@ const docs: ComponentDocs = {
   category: 'Content',
   subComponents: ['MenuItemLink'],
   screenshotWidths: [],
-  migrationGuide: true,
   explore: false,
   description: (
     <Stack space="large">
