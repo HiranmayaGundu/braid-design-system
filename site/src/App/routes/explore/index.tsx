@@ -42,7 +42,6 @@ type Action =
       payload: {
         width: number;
         height: number;
-        scale: number;
       };
     }
   | { type: 'PAN'; payload: { x: number; y: number } }
@@ -63,14 +62,14 @@ const reducer = (state: State, action: Action): State => {
   // console.log(action);
   switch (action.type) {
     case 'INITIALISE': {
-      const { width, height, scale } = action.payload;
+      const { width, height } = action.payload;
 
       return {
         ...state,
         width,
         height,
-        scale,
-        initialScale: scale,
+        // scale,
+        // initialScale: scale,
       };
     }
     case 'RESET': {
@@ -130,18 +129,7 @@ const ExplorePage = () => {
 
   const zoomIn = useCallback(() => {
     if (panzoomRef.current) {
-      const s = panzoomRef.current.getScale();
-      const { scale, x, y } = panzoomRef.current.zoomIn({
-        focal: {
-          x: 0,
-          y: -(contentRef.current.scrollHeight * s) / 2,
-        },
-      });
-      console.log(
-        contentRef.current.scrollHeight,
-        s,
-        -(contentRef.current.scrollHeight * s) / 2,
-      );
+      const { scale, x, y } = panzoomRef.current.zoomIn();
 
       dispatch({
         type: 'ZOOM_IN',
@@ -152,18 +140,7 @@ const ExplorePage = () => {
 
   const zoomOut = useCallback(() => {
     if (panzoomRef.current) {
-      const s = panzoomRef.current.getScale();
-      const { scale, x, y } = panzoomRef.current.zoomOut({
-        focal: {
-          x: 0,
-          y: -(contentRef.current.scrollHeight * s) / 2,
-        },
-      });
-      console.log(
-        contentRef.current.scrollHeight,
-        s,
-        -(contentRef.current.scrollHeight * s) / 2,
-      );
+      const { scale, x, y } = panzoomRef.current.zoomOut();
 
       dispatch({
         type: 'ZOOM_OUT',
@@ -182,30 +159,8 @@ const ExplorePage = () => {
       const containerElement = containerRef.current;
       const contentElement = contentRef.current;
 
-      const isWide = contentElement.scrollWidth > contentElement.scrollHeight;
-      const startScale = isWide
-        ? document.documentElement.clientWidth / contentElement.scrollWidth
-        : document.documentElement.clientHeight / contentElement.scrollHeight;
-
-      const startY =
-        -(
-          contentElement.scrollHeight / startScale -
-          contentElement.scrollHeight
-        ) / 2;
-
-      const startX =
-        (-(
-          contentElement.scrollWidth / startScale -
-          contentElement.scrollWidth
-        ) /
-          2) *
-        startScale;
-
       panzoomRef.current = panzoom(contentElement, {
         canvas: true,
-        startScale,
-        startY,
-        startX,
       });
 
       dispatch({
@@ -213,7 +168,6 @@ const ExplorePage = () => {
         payload: {
           width: contentElement.scrollWidth,
           height: contentElement.scrollHeight,
-          scale: startScale,
         },
       });
 
