@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useReducer,
-} from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import panzoom from '@panzoom/panzoom';
 
 import { Page } from '../../../types';
@@ -15,8 +9,6 @@ import {
   Inline,
   IconAdd,
   IconMinus,
-  IconLocation,
-  IconLanguage,
   IconRefresh,
 } from '../../../../../lib/components';
 import { useThemeSettings } from '../../ThemeSetting';
@@ -26,86 +18,6 @@ import { useStyles } from 'sku/react-treat';
 import { Explore } from './ExploreComponent';
 import { ExplorePanel } from './ExplorePanel';
 import * as styleRefs from './explore.treat';
-import { pointSize } from './exploreMapPointSize';
-
-interface State {
-  ready: boolean;
-  scale: number;
-  initialScale: number;
-  width: number;
-  height: number;
-}
-
-type Action =
-  | {
-      type: 'INITIALISE';
-      payload: {
-        width: number;
-        height: number;
-      };
-    }
-  | { type: 'PAN'; payload: { x: number; y: number } }
-  | { type: 'RESET' }
-  | { type: 'ZOOM_WHEEL'; payload: { scale: number; x: number; y: number } }
-  | { type: 'ZOOM_IN'; payload: { scale: number; x: number; y: number } }
-  | { type: 'ZOOM_OUT'; payload: { scale: number; x: number; y: number } };
-
-const initialState: State = {
-  ready: false,
-  scale: 1,
-  initialScale: 1,
-  width: 0,
-  height: 0,
-};
-
-const reducer = (state: State, action: Action): State => {
-  // console.log(action);
-  switch (action.type) {
-    case 'INITIALISE': {
-      const { width, height } = action.payload;
-
-      return {
-        ...state,
-        width,
-        height,
-        // scale,
-        // initialScale: scale,
-      };
-    }
-    case 'RESET': {
-      return {
-        ...state,
-        scale: state.initialScale,
-      };
-    }
-    case 'PAN': {
-      const { x, y } = action.payload;
-      console.log(x, y);
-
-      return {
-        ...state,
-      };
-    }
-    case 'ZOOM_WHEEL':
-    case 'ZOOM_IN':
-    case 'ZOOM_OUT':
-      const { scale, x, y } = action.payload;
-
-      return {
-        ...state,
-        scale,
-      };
-    default:
-      return state;
-  }
-};
-
-interface PanEvent extends Event {
-  detail: {
-    x: number;
-    y: number;
-  };
-}
 
 const ExplorePage = () => {
   const styles = useStyles(styleRefs);
@@ -113,46 +25,71 @@ const ExplorePage = () => {
   const containerRef = useRef<HTMLElement>(null);
   const panzoomRef = useRef<ReturnType<typeof panzoom> | null>(null);
 
+  const [zoom, setZoom] = useState(1);
   const { ready: themeReady } = useThemeSettings();
-  // const [startRendering, setStartRendering] = useState(false);
-  const [startRendering, setStartRendering] = useState(true);
+  const [startRendering, setStartRendering] = useState(false);
   const exploreReady = themeReady && startRendering;
-
-  const [state, dispatch] = useReducer(reducer, initialState);
 
   const reset = useCallback(() => {
     if (panzoomRef.current) {
       panzoomRef.current.reset();
-      dispatch({ type: 'RESET' });
+      setZoom(1);
     }
   }, [panzoomRef]);
 
   const zoomIn = useCallback(() => {
-    if (panzoomRef.current) {
-      const { scale, x, y } = panzoomRef.current.zoomIn();
+    if (panzoomRef.current && contentRef.current && containerRef.current) {
+      const scale = panzoomRef.current.getScale();
+      const { width, height } = contentRef.current.getBoundingClientRect();
+      const {
+        width: parentWidth,
+        height: parentHeight,
+      } = containerRef.current.getBoundingClientRect();
 
-      dispatch({
-        type: 'ZOOM_IN',
-        payload: { scale, x, y },
+      const halfWidth = document.documentElement.clientWidth / 2;
+      const halfHeight = document.documentElement.clientHeight / 2;
+
+      const clientX = halfWidth - width / scale / 2;
+      const clientY = halfHeight - height / scale / 2;
+
+      const toScale = scale * Math.exp(1 * 0.3);
+
+      panzoomRef.current.zoomIn({
+        animate: false,
+        focal: {
+          x: (clientX / parentWidth) * (parentWidth * toScale),
+          y: (clientY / parentHeight) * (parentHeight * toScale),
+        },
       });
     }
   }, [panzoomRef]);
 
   const zoomOut = useCallback(() => {
-    if (panzoomRef.current) {
-      const { scale, x, y } = panzoomRef.current.zoomOut();
+    if (panzoomRef.current && contentRef.current && containerRef.current) {
+      const scale = panzoomRef.current.getScale();
+      const { width, height } = contentRef.current.getBoundingClientRect();
+      const {
+        width: parentWidth,
+        height: parentHeight,
+      } = containerRef.current.getBoundingClientRect();
 
-      dispatch({
-        type: 'ZOOM_OUT',
-        payload: { scale, x, y },
+      const halfWidth = document.documentElement.clientWidth / 2;
+      const halfHeight = document.documentElement.clientHeight / 2;
+
+      const clientX = halfWidth - width / scale / 2;
+      const clientY = halfHeight - height / scale / 2;
+
+      const toScale = scale * Math.exp(-1 * 0.3);
+
+      panzoomRef.current.zoomOut({
+        animate: false,
+        focal: {
+          x: (clientX / parentWidth) * (parentWidth * toScale),
+          y: (clientY / parentHeight) * (parentHeight * toScale),
+        },
       });
     }
   }, [panzoomRef]);
-
-  // const throttledDispatch = useCallback(
-  //   throttle((a: Action) => dispatch(a), 300, { trailing: true }),
-  //   [dispatch],
-  // );
 
   useEffect(() => {
     if (containerRef.current && contentRef.current && startRendering) {
@@ -161,14 +98,6 @@ const ExplorePage = () => {
 
       panzoomRef.current = panzoom(contentElement, {
         canvas: true,
-      });
-
-      dispatch({
-        type: 'INITIALISE',
-        payload: {
-          width: contentElement.scrollWidth,
-          height: contentElement.scrollHeight,
-        },
       });
 
       const zoomWheel = (e: WheelEvent) => {
@@ -180,46 +109,31 @@ const ExplorePage = () => {
           return;
         }
 
-        const { scale, x, y } = panzoomRef.current.zoomWithWheel(e);
-
-        dispatch({
-          type: 'ZOOM_WHEEL',
-          payload: {
-            scale,
-            x,
-            y,
-          },
-        });
+        panzoomRef.current.zoomWithWheel(e);
       };
 
-      const updateMapLocation = (event: Event) => {
-        const { detail } = event as PanEvent;
-
-        dispatch({
-          type: 'PAN',
-          payload: {
-            x: detail.x,
-            y: detail.y,
-          },
-        });
+      const updateZoom = () => {
+        if (panzoomRef.current) {
+          setZoom(panzoomRef.current.getScale());
+        }
       };
 
       containerElement.addEventListener('wheel', zoomWheel);
-      contentElement.addEventListener('panzoomend', updateMapLocation);
+      contentElement.addEventListener('panzoomzoom', updateZoom);
 
       return () => {
         containerElement.removeEventListener('wheel', zoomWheel);
-        contentElement.removeEventListener('panzoomend', updateMapLocation);
+        contentElement.removeEventListener('panzoomzoom', updateZoom);
         panzoomRef.current?.destroy();
       };
     }
   }, [startRendering]);
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setStartRendering(true);
-  //   }, 500);
-  // }, []);
+  useEffect(() => {
+    setTimeout(() => {
+      setStartRendering(true);
+    }, 500);
+  }, []);
 
   return (
     <Box position="fixed" top={0} bottom={0} left={0} right={0}>
@@ -232,14 +146,8 @@ const ExplorePage = () => {
           transition="fast"
           opacity={themeReady ? undefined : 0}
         >
-          <Box ref={contentRef} boxShadow="borderPositive">
-            <Box
-              style={{ width: 4000, height: 4000 }}
-              boxShadow="borderCritical"
-            >
-              <IconLanguage size="fill" />
-            </Box>
-            {/* <Explore /> */}
+          <Box ref={contentRef}>
+            <Explore />
           </Box>
         </Box>
       ) : null}
@@ -256,7 +164,7 @@ const ExplorePage = () => {
         pointerEvents={exploreReady ? 'none' : undefined}
       >
         <Box className={styles.loader}>
-          <Logo iconOnly height="100%" width="100%" />
+          <Logo iconOnly draw height="100%" width="100%" />
         </Box>
       </Box>
 
@@ -276,7 +184,7 @@ const ExplorePage = () => {
                 {(iconProps) => <IconMinus {...iconProps} />}
               </IconButton>
               <Text size="small" tone="secondary">
-                {Math.round(state.scale * 100)}%
+                {Math.round(zoom * 100)}%
               </Text>
               <IconButton label="Zoom In" onClick={zoomIn} keyboardAccessible>
                 {(iconProps) => <IconAdd {...iconProps} />}

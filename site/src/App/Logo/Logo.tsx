@@ -1,10 +1,13 @@
 import React from 'react';
 import { Box } from '../../../../lib/components';
+import { useStyles } from 'sku/react-treat';
+import * as styleRefs from './Logo.treat';
 
 interface LogoProps {
   width?: string | number;
   height?: string | number;
   iconOnly?: boolean;
+  draw?: boolean;
 }
 
 const defaultSize = 32;
@@ -12,7 +15,13 @@ const defaultSize = 32;
 const resolveToPxIfUnitless = (value: string | number) =>
   typeof value === 'string' && /[0-9]$/.test(value) ? `${value}px` : value;
 
-export const Logo = ({ width, height, iconOnly = false }: LogoProps) => {
+export const Logo = ({
+  width,
+  height,
+  iconOnly = false,
+  draw = false,
+}: LogoProps) => {
+  const styles = useStyles(styleRefs);
   const defaultWidth = iconOnly ? defaultSize : 164;
   const defaultHeight = defaultSize;
 
@@ -34,6 +43,7 @@ export const Logo = ({ width, height, iconOnly = false }: LogoProps) => {
         // Changed the first value to 20 to crop the whitespace
         viewBox="20 0 560 110"
         enableBackground="new 20 0 560 110"
+        className={draw ? styles.svg : undefined}
       >
         <title>BRAID</title>
         {!iconOnly ? (
@@ -78,6 +88,7 @@ export const Logo = ({ width, height, iconOnly = false }: LogoProps) => {
         ) : null}
         <g>
           <path
+            className={draw ? styles.draw : undefined}
             d="M83.543,45.276c-2.079,0-4.146-0.855-5.633-2.534l-13.998-15.8c-8.219-8.887-16.521-8.802-16.583-8.78
         c-0.145,0.008-0.291,0.013-0.438,0.013H36.337v19.579c0,4.153-3.368,7.522-7.524,7.522c-4.155,0-7.523-3.369-7.523-7.522V10.65
         c0-4.154,3.368-7.523,7.523-7.523H46.74c2.574-0.082,15.813,0.186,28.327,13.72l14.104,15.918c2.755,3.109,2.468,7.864-0.642,10.62
@@ -86,6 +97,7 @@ export const Logo = ({ width, height, iconOnly = false }: LogoProps) => {
         </g>
         <g>
           <path
+            className={draw ? styles.draw : undefined}
             d="M93.616,72.958c-2.08,0-4.147-0.856-5.633-2.532c-2.755-3.11-2.468-7.866,0.642-10.623l15.798-13.997
         c8.853-8.188,8.782-16.366,8.775-16.711c-0.01-0.146-0.008-0.162-0.008-0.309V18.231H93.613c-4.156,0-7.523-3.369-7.523-7.523
         c0-4.153,3.368-7.522,7.523-7.522h27.1c4.157,0,7.524,3.369,7.524,7.522v17.929c0.083,2.533-0.187,15.812-13.717,28.325
@@ -94,6 +106,7 @@ export const Logo = ({ width, height, iconOnly = false }: LogoProps) => {
         </g>
         <g>
           <path
+            className={draw ? styles.draw : undefined}
             d="M102.479,107.072c-3.514,0-15.989-0.97-27.786-13.724L60.589,77.431c-2.755-3.11-2.468-7.864,0.642-10.618
         c3.107-2.759,7.866-2.47,10.619,0.641l13.998,15.796c8.197,8.865,16.416,8.816,16.712,8.777c0.149-0.011,0.169-0.011,0.309-0.008
         h10.556V72.442c0-4.157,3.367-7.523,7.523-7.523c4.155,0,7.523,3.366,7.523,7.523v27.099c0,4.157-3.368,7.524-7.523,7.524H103.02
@@ -102,6 +115,7 @@ export const Logo = ({ width, height, iconOnly = false }: LogoProps) => {
         </g>
         <g>
           <path
+            className={draw ? styles.draw : undefined}
             d="M55.887,107.072h-27.1c-4.156,0-7.523-3.369-7.523-7.523V81.622c-0.083-2.537,0.186-15.814,13.719-28.323l15.916-14.107
         c3.108-2.757,7.863-2.467,10.619,0.642c2.755,3.109,2.469,7.864-0.642,10.62L45.077,64.45c-8.853,8.189-8.781,16.369-8.774,16.713
         c0.01,0.146,0.008,0.161,0.008,0.308v10.556h19.577c4.156,0,7.523,3.37,7.523,7.522C63.41,103.703,60.043,107.072,55.887,107.072z"

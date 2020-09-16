@@ -11,11 +11,16 @@ import {
   TextLink,
   Columns,
   Column,
+  TextLinkButton,
+  HiddenVisually,
 } from '../../../../../lib/components';
 import { getHistory } from '../../Updates';
 import { ThemedExample } from '../../ThemeSetting';
 import { documentedComponents } from '../../navigationHelpers';
 import { chunk } from 'lodash';
+import { CopyIcon } from '../../Code/CopyIcon';
+import reactElementToJSXString from 'react-element-to-jsx-string';
+import copy from 'copy-to-clipboard';
 
 const noop = () => {};
 const DefaultContainer = ({ children }: { children: ReactNode }) => (
@@ -87,18 +92,55 @@ const ExploreComponent = ({
               ...example
             },
             index,
-          ) => (
-            <Stack space="medium" key={`${example.label}_${index}`}>
-              <Text tone="secondary">{example.label}</Text>
-              {Example && (
-                <ThemedExample background={background}>
-                  <Container>
-                    <Example id={`${example.label}_${index}`} handler={noop} />
-                  </Container>
-                </ThemedExample>
-              )}
-            </Stack>
-          ),
+          ) => {
+            const codeAsString = Example
+              ? reactElementToJSXString(
+                  Example({ id: 'id', handler: noop }), // eslint-disable-line new-cap
+                  {
+                    useBooleanShorthandSyntax: false,
+                    showDefaultProps: false,
+                    showFunctions: false,
+                    filterProps: ['onChange', 'onBlur', 'onFocus'],
+                  },
+                )
+              : '';
+
+            return (
+              <Stack space="medium" key={`${example.label}_${index}`}>
+                <Columns space="medium">
+                  <Column>
+                    <Text tone="secondary">{example.label}</Text>
+                  </Column>
+                  {codeAsString ? (
+                    <Column width="content">
+                      <Text tone="secondary">
+                        <TextLinkButton
+                          hitArea="large"
+                          aria-describedby={`copy-${example.label}_${index}`}
+                          onClick={() => copy(codeAsString)}
+                        >
+                          <CopyIcon />
+                          <Box id={`copy-${example.label}_${index}`}>
+                            <HiddenVisually>Copy to clipboard</HiddenVisually>
+                          </Box>
+                        </TextLinkButton>
+                      </Text>
+                    </Column>
+                  ) : null}
+                </Columns>
+                {Example && (
+                  <ThemedExample background={background}>
+                    <Container>
+                      <Example
+                        id={`${example.label}_${index}`}
+                        handler={noop}
+                      />
+                    </Container>
+                  </ThemedExample>
+                )}
+              </Stack>
+            );
+          },
         )}
       </Stack>
     </Box>
