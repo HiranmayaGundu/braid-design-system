@@ -17,6 +17,7 @@ import foundations from './routes/foundations';
 import examples from './routes/examples';
 import components from './routes/components';
 import releaseNotes from './routes/releases';
+import explore from './routes/explore';
 import { AppMeta } from './Seo/AppMeta';
 
 const CustomLink = makeLinkComponent(
@@ -48,30 +49,35 @@ const CustomLink = makeLinkComponent(
     ),
 );
 
+const explorePath = '/explore';
+
 export const App = () => (
   <StrictMode>
     <ThemeSettingProvider>
       <BraidProvider theme={docs} linkComponent={CustomLink}>
         <ToastProvider>
           <AppMeta />
-          <Navigation>
-            <Switch>
-              {map(
-                {
-                  ...home,
-                  ...guides,
-                  ...foundations,
-                  ...examples,
-                  ...components,
-                  ...releaseNotes,
-                },
-                (routeProps, path) => (
-                  <Route key={path} {...routeProps} path={path} />
-                ),
-              )}
-              <Redirect path="/components" exact to="/" />
-            </Switch>
-          </Navigation>
+          <Switch>
+            <Route {...explore[explorePath]} path={explorePath} />
+            <Navigation>
+              <Switch>
+                {map(
+                  {
+                    ...home,
+                    ...guides,
+                    ...foundations,
+                    ...examples,
+                    ...components,
+                    ...releaseNotes,
+                  },
+                  (routeProps, path) => (
+                    <Route key={path} {...routeProps} path={path} />
+                  ),
+                )}
+                <Redirect path="/components" exact to="/" />
+              </Switch>
+            </Navigation>
+          </Switch>
         </ToastProvider>
       </BraidProvider>
     </ThemeSettingProvider>

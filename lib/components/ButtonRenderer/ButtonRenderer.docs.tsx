@@ -10,6 +10,7 @@ const Container = ({ children }: { children: ReactNode }) => (
 const docs: ComponentDocs = {
   category: 'Content',
   screenshotWidths: [320],
+  explore: false,
   description: (
     <Stack space="large">
       <Text>

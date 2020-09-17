@@ -29,6 +29,7 @@ const exampleRoutes = getPages('site/src/App/routes/examples/index.ts');
 module.exports = [
   { route: '/', name: 'home' },
   { route: '/releases', name: 'releases' },
+  { route: '/explore', name: 'explore' },
   ...guideRoutes.map((route) => ({ route })),
   ...foundationRoutes.map((route) => ({ route })),
   ...exampleRoutes.map((route) => ({ route })),
