@@ -1,4 +1,11 @@
-import React, { Fragment, ReactNode, memo } from 'react';
+import React, {
+  Fragment,
+  ReactNode,
+  memo,
+  useEffect,
+  useState,
+  useRef,
+} from 'react';
 
 import {
   Stack,
@@ -21,6 +28,8 @@ import { chunk } from 'lodash';
 import { CopyIcon } from '../../Code/CopyIcon';
 import reactElementToJSXString from 'react-element-to-jsx-string';
 import copy from 'copy-to-clipboard';
+import { useIntersection } from 'react-use';
+import { Overlay } from '../../../../../lib/components/private/Overlay/Overlay';
 
 const noop = () => {};
 const DefaultContainer = ({ children }: { children: ReactNode }) => (
@@ -42,6 +51,51 @@ const explorableComponents = documentedComponents
 
 const rowLength = Math.floor(Math.sqrt(explorableComponents.length)) * 2;
 const exploreRows = chunk(explorableComponents, rowLength);
+
+const ExampleMask = ({ children }: { children: ReactNode }) => {
+  const elRef = useRef<HTMLElement | null>(null);
+  const [dimensions, setDimensions] = useState<{ w: number; h: number }>({
+    w: 0,
+    h: 0,
+  });
+  const intersection = useIntersection(elRef, {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1,
+  });
+
+  useEffect(() => {
+    if (elRef.current) {
+      setDimensions({
+        w: elRef.current.scrollWidth,
+        h: elRef.current.scrollHeight,
+      });
+    }
+  }, []);
+
+  const masked = Boolean(intersection && intersection.intersectionRatio < 1);
+
+  return (
+    <Box
+      ref={elRef}
+      position="relative"
+      style={{
+        height: dimensions.h > 0 ? dimensions.h : undefined,
+        width: dimensions.w > 0 ? dimensions.w : undefined,
+      }}
+    >
+      <Overlay
+        background="body"
+        borderRadius="standard"
+        transition="fast"
+        visible={masked}
+      />
+      <Box width="full" height="full">
+        {masked ? null : children}
+      </Box>
+    </Box>
+  );
+};
 
 const ExploreComponent = ({
   component,
@@ -134,14 +188,16 @@ const ExploreComponent = ({
                 </Columns>
                 {Example && (
                   <ThemedExample background={background}>
-                    <Container>
-                      <Box style={{ cursor: 'auto' }}>
-                        <Example
-                          id={`${example.label}_${index}`}
-                          handler={noop}
-                        />
-                      </Box>
-                    </Container>
+                    <ExampleMask>
+                      <Container>
+                        <Box style={{ cursor: 'auto' }}>
+                          <Example
+                            id={`${example.label}_${index}`}
+                            handler={noop}
+                          />
+                        </Box>
+                      </Container>
+                    </ExampleMask>
                   </ThemedExample>
                 )}
               </Stack>
