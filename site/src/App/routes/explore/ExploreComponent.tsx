@@ -30,6 +30,7 @@ import reactElementToJSXString from 'react-element-to-jsx-string';
 import copy from 'copy-to-clipboard';
 import { useIntersection } from 'react-use';
 import { Overlay } from '../../../../../lib/components/private/Overlay/Overlay';
+import { ComponentDocs } from '../../../types';
 
 const noop = () => {};
 const DefaultContainer = ({ children }: { children: ReactNode }) => (
@@ -52,7 +53,13 @@ const explorableComponents = documentedComponents
 const rowLength = Math.floor(Math.sqrt(explorableComponents.length)) * 2;
 const exploreRows = chunk(explorableComponents, rowLength);
 
-const ExampleMask = ({ children }: { children: ReactNode }) => {
+const ExampleMask = ({
+  children,
+  background,
+}: {
+  children: ReactNode;
+  background: ComponentDocs['examples'][number]['background'];
+}) => {
   const elRef = useRef<HTMLElement | null>(null);
   const [dimensions, setDimensions] = useState<{ w: number; h: number }>({
     w: 0,
@@ -85,7 +92,7 @@ const ExampleMask = ({ children }: { children: ReactNode }) => {
       }}
     >
       <Overlay
-        background="body"
+        background={background}
         borderRadius="standard"
         transition="fast"
         visible={masked}
@@ -188,7 +195,7 @@ const ExploreComponent = ({
                 </Columns>
                 {Example && (
                   <ThemedExample background={background}>
-                    <ExampleMask>
+                    <ExampleMask background={background}>
                       <Container>
                         <Box style={{ cursor: 'auto' }}>
                           <Example
