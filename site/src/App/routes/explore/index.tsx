@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import React, { useState, useEffect, useRef } from 'react';
+import panzoom from 'panzoom';
 
 import { Page } from '../../../types';
 import { PageTitle } from '../../Seo/PageTitle';
@@ -27,6 +27,65 @@ const ExplorePage = () => {
   const [startRendering, setStartRendering] = useState(false);
   const exploreReady = themeReady && startRendering;
 
+  const contentRef = useRef<HTMLElement | null>(null);
+  const panzoomRef = useRef<ReturnType<typeof panzoom> | null>(null);
+  const [zoom, setZoom] = useState(1);
+
+  const zoomOut = () => {
+    if (panzoomRef.current) {
+      panzoomRef.current.smoothZoom(
+        document.documentElement.clientWidth / 2,
+        document.documentElement.clientHeight / 2,
+        0.75,
+      );
+    }
+  };
+
+  const zoomIn = () => {
+    if (panzoomRef.current) {
+      panzoomRef.current.smoothZoom(
+        document.documentElement.clientWidth / 2,
+        document.documentElement.clientHeight / 2,
+        1.25,
+      );
+    }
+  };
+
+  const reset = () => {
+    if (panzoomRef.current) {
+      panzoomRef.current.zoomAbs(
+        document.documentElement.clientWidth / 2,
+        document.documentElement.clientHeight / 2,
+        1,
+      );
+      const { x, y } = panzoomRef.current.getTransform();
+      panzoomRef.current.moveBy(-x, -y, true);
+    }
+  };
+
+  useEffect(() => {
+    if (startRendering && contentRef.current) {
+      panzoomRef.current = panzoom(contentRef.current, {
+        zoomDoubleClickSpeed: 1,
+        beforeMouseDown: (e) =>
+          // @ts-expect-error
+          /^(a|input|button)$/i.test(e.target.tagName) ||
+          // @ts-expect-error
+          e.target.getAttribute('role') === 'button',
+      });
+
+      panzoomRef.current.on('zoom', () => {
+        if (panzoomRef.current) {
+          setZoom(panzoomRef.current.getTransform().scale);
+        }
+      });
+
+      return () => {
+        panzoomRef.current?.dispose();
+      };
+    }
+  }, [startRendering]);
+
   useEffect(() => {
     setTimeout(() => {
       setStartRendering(true);
@@ -44,74 +103,36 @@ const ExplorePage = () => {
           opacity={themeReady ? undefined : 0}
           style={{ cursor: 'move' }}
         >
-          <TransformWrapper
-            options={{
-              minScale: 0.1,
-              limitToBounds: false,
-              // minPositionX: PAN_THRESHOLD,
-              // maxPositionX: contentWidth + PAN_THRESHOLD,
-
-              // limitToWrapper: true,
-            }}
-            zoomIn={{ step: 5 }}
-            zoomOut={{ step: 5 }}
-            pan={{ velocity: true }}
-            wheel={{ step: 200 }}
-            doubleClick={{ disabled: true }}
-          >
-            {/* @ts-expect-error */}
-            {({ zoomIn, zoomOut, resetTransform, scale: zoom }) => (
-              <>
-                <TransformComponent>
-                  {/* <Box
-                    style={{ height: 4000, width: 4000 }}
-                    position="relative"
-                  >
-                    <IconLanguage size="fill" />
-                  </Box> */}
-                  <Explore />
-                </TransformComponent>
-                <Box
-                  transition="fast"
-                  opacity={!exploreReady ? 0 : undefined}
-                  className={styles.panelDelay}
-                >
-                  <ExplorePanel bottom right>
-                    <Box paddingY="small" paddingX="gutter">
-                      <Inline space="small" alignY="center">
-                        <IconButton
-                          label="Reset"
-                          onClick={resetTransform}
-                          keyboardAccessible
-                        >
-                          {(iconProps) => <IconRefresh {...iconProps} />}
-                        </IconButton>
-                        <IconButton
-                          label="Zoom Out"
-                          onClick={zoomOut}
-                          keyboardAccessible
-                        >
-                          {(iconProps) => <IconMinus {...iconProps} />}
-                        </IconButton>
-                        <Text size="small" tone="secondary">
-                          {Math.round(zoom * 100)}%
-                        </Text>
-                        <IconButton
-                          label="Zoom In"
-                          onClick={zoomIn}
-                          keyboardAccessible
-                        >
-                          {(iconProps) => <IconAdd {...iconProps} />}
-                        </IconButton>
-                      </Inline>
-                    </Box>
-                  </ExplorePanel>
-                </Box>
-              </>
-            )}
-          </TransformWrapper>
+          <Box ref={contentRef} userSelect="none">
+            <Explore />
+          </Box>
         </Box>
       ) : null}
+
+      <Box
+        transition="fast"
+        opacity={!exploreReady ? 0 : undefined}
+        className={styles.panelDelay}
+      >
+        <ExplorePanel bottom right>
+          <Box paddingY="small" paddingX="gutter">
+            <Inline space="small" alignY="center">
+              <IconButton label="Reset" onClick={reset} keyboardAccessible>
+                {(iconProps) => <IconRefresh {...iconProps} />}
+              </IconButton>
+              <IconButton label="Zoom Out" onClick={zoomOut} keyboardAccessible>
+                {(iconProps) => <IconMinus {...iconProps} />}
+              </IconButton>
+              <Text size="small" tone="secondary">
+                {Math.round(zoom * 100)}%
+              </Text>
+              <IconButton label="Zoom In" onClick={zoomIn} keyboardAccessible>
+                {(iconProps) => <IconAdd {...iconProps} />}
+              </IconButton>
+            </Inline>
+          </Box>
+        </ExplorePanel>
+      </Box>
 
       {/* Loader */}
       <Box
