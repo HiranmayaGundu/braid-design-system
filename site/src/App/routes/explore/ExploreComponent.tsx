@@ -68,7 +68,7 @@ const ExampleMask = ({
   const intersection = useIntersection(elRef, {
     root: null,
     rootMargin: '0px',
-    threshold: 1,
+    threshold: 0,
   });
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const ExampleMask = ({
     }
   }, []);
 
-  const masked = Boolean(intersection && intersection.intersectionRatio < 1);
+  const masked = Boolean(intersection && intersection.intersectionRatio === 0);
 
   return (
     <Box
@@ -91,15 +91,15 @@ const ExampleMask = ({
         width: dimensions.w > 0 ? dimensions.w : undefined,
       }}
     >
+      <Box width="full" height="full">
+        {masked ? null : children}
+      </Box>
       <Overlay
         background={background}
         borderRadius="standard"
         transition="fast"
         visible={masked}
       />
-      <Box width="full" height="full">
-        {masked ? null : children}
-      </Box>
     </Box>
   );
 };

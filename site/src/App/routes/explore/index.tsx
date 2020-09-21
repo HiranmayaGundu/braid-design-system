@@ -56,7 +56,7 @@ const ExplorePage = () => {
             zoomIn={{ step: 5 }}
             zoomOut={{ step: 5 }}
             pan={{ velocity: true }}
-            wheel={{ step: 300 }}
+            wheel={{ step: 200 }}
             doubleClick={{ disabled: true }}
           >
             {/* @ts-expect-error */}
