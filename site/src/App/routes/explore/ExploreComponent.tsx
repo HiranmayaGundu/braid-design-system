@@ -154,7 +154,7 @@ const ExploreComponent = ({
                   } in the last two months`}
                   bleedY
                 >
-                  {String(updateCount)}
+                  {`${updateCount} new release${updateCount === 1 ? '' : 's'}`}
                 </Badge>
               </Box>
             ) : undefined}
