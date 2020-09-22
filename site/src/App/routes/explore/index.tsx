@@ -66,6 +66,8 @@ const ExplorePage = () => {
   useEffect(() => {
     if (startRendering && contentRef.current) {
       panzoomRef.current = panzoom(contentRef.current, {
+        maxZoom: 20,
+        minZoom: 0.1,
         zoomDoubleClickSpeed: 1,
         beforeWheel(e) {
           const isTrackpad = e.deltaY % 1 !== 0;

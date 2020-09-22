@@ -20,6 +20,7 @@ import {
   Column,
   TextLinkButton,
   HiddenVisually,
+  Disclosure,
 } from '../../../../../lib/components';
 import { getHistory } from '../../Updates';
 import { ThemedExample } from '../../ThemeSetting';
@@ -37,7 +38,7 @@ const DefaultContainer = ({ children }: { children: ReactNode }) => (
   <Fragment>{children}</Fragment>
 );
 
-const COLUMN_SIZE = 5;
+const COLUMN_SIZE = 4;
 
 const explorableComponents = documentedComponents
   .filter(
@@ -51,12 +52,10 @@ const explorableComponents = documentedComponents
   .map(({ examples, ...rest }) => ({
     ...rest,
     examples: chunk(
-      examples
-        .filter(
-          ({ docsSite, explore, Example }) =>
-            Example && (explore || (docsSite !== false && explore !== false)),
-        )
-        .slice(0, COLUMN_SIZE * 2),
+      examples.filter(
+        ({ docsSite, explore, Example }) =>
+          Example && (explore || (docsSite !== false && explore !== false)),
+      ),
       COLUMN_SIZE,
     ),
   }));
@@ -130,35 +129,48 @@ const ExploreComponent = ({
   return (
     <Box padding="xxlarge">
       <Stack space="xxlarge">
-        <Inline space="small" alignY="top">
-          <Heading level="2">
-            <TextLink
-              href={`/components/${component.name}`}
-              target="explore-detail"
-            >
-              {component.name}
-            </TextLink>
-          </Heading>
-          {updateCount > 0 ? (
-            <Box
-              component={Link}
-              cursor="pointer"
-              href={`/components/${component.name}/releases`}
-              target="explore-detail"
-            >
-              <Badge
-                tone="promote"
-                weight="strong"
-                title={`${updateCount} release${
-                  updateCount === 1 ? '' : 's'
-                } in the last two months`}
-                bleedY
+        <Stack space="large">
+          <Inline space="small" alignY="top">
+            <Heading level="2">
+              <TextLink
+                href={`/components/${component.name}`}
+                target="explore-detail"
               >
-                {String(updateCount)}
-              </Badge>
+                {component.name}
+              </TextLink>
+            </Heading>
+            {updateCount > 0 ? (
+              <Box
+                component={Link}
+                cursor="pointer"
+                href={`/components/${component.name}/releases`}
+                target="explore-detail"
+              >
+                <Badge
+                  tone="promote"
+                  weight="strong"
+                  title={`${updateCount} release${
+                    updateCount === 1 ? '' : 's'
+                  } in the last two months`}
+                  bleedY
+                >
+                  {String(updateCount)}
+                </Badge>
+              </Box>
+            ) : undefined}
+          </Inline>
+          {component.description ? (
+            <Box style={{ width: '700px' }}>
+              <Disclosure
+                collapseLabel="Hide description"
+                expandLabel="Show description"
+                id="id"
+              >
+                {component.description}
+              </Disclosure>
             </Box>
-          ) : undefined}
-        </Inline>
+          ) : null}
+        </Stack>
         <Columns space="xlarge">
           {component.examples.map((exampleChunk, idx) => (
             <Column key={`${component.name}_${idx}`}>
@@ -186,33 +198,36 @@ const ExploreComponent = ({
                       : '';
 
                     return (
-                      <Stack space="medium" key={`${example.label}_${index}`}>
-                        <Columns space="medium">
-                          <Column>
-                            <Text tone="secondary">{example.label}</Text>
-                          </Column>
-                          {codeAsString ? (
-                            <Column width="content">
-                              <Text tone="secondary">
-                                <TextLinkButton
-                                  hitArea="large"
-                                  aria-describedby={`copy-${example.label}_${index}`}
-                                  onClick={() => copy(codeAsString)}
-                                >
-                                  <CopyIcon />
-                                  <Box id={`copy-${example.label}_${index}`}>
-                                    <HiddenVisually>
-                                      Copy to clipboard
-                                    </HiddenVisually>
-                                  </Box>
-                                </TextLinkButton>
-                              </Text>
+                      <Box
+                        style={{ width: '700px' }}
+                        key={`${example.label}_${index}`}
+                      >
+                        <Stack space="medium">
+                          <Columns space="medium">
+                            <Column>
+                              <Text tone="secondary">{example.label}</Text>
                             </Column>
-                          ) : null}
-                        </Columns>
-                        {Example ? (
-                          <ThemedExample background={background}>
-                            <Box style={{ width: '600px' }}>
+                            {codeAsString ? (
+                              <Column width="content">
+                                <Text tone="secondary">
+                                  <TextLinkButton
+                                    hitArea="large"
+                                    aria-describedby={`copy-${example.label}_${index}`}
+                                    onClick={() => copy(codeAsString)}
+                                  >
+                                    <CopyIcon />
+                                    <Box id={`copy-${example.label}_${index}`}>
+                                      <HiddenVisually>
+                                        Copy to clipboard
+                                      </HiddenVisually>
+                                    </Box>
+                                  </TextLinkButton>
+                                </Text>
+                              </Column>
+                            ) : null}
+                          </Columns>
+                          {Example ? (
+                            <ThemedExample background={background}>
                               <ExampleMask background={background}>
                                 <Container>
                                   <Box style={{ cursor: 'auto' }}>
@@ -223,10 +238,10 @@ const ExploreComponent = ({
                                   </Box>
                                 </Container>
                               </ExampleMask>
-                            </Box>
-                          </ThemedExample>
-                        ) : null}
-                      </Stack>
+                            </ThemedExample>
+                          ) : null}
+                        </Stack>
+                      </Box>
                     );
                   },
                 )}
