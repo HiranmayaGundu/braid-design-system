@@ -53,6 +53,7 @@ const docs: ComponentDocs = {
     },
     {
       label: 'With identifying values',
+      explore: false,
       Container,
       Example: ({ id }) => {
         const [value, setValue] = useState(2000);
@@ -118,6 +119,7 @@ const docs: ComponentDocs = {
     },
     {
       label: 'TextDropdown on Brand Background',
+      explore: false,
       background: 'brand',
       Container,
       Example: ({ id }) => {

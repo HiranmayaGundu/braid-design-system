@@ -67,6 +67,14 @@ const ExplorePage = () => {
     if (startRendering && contentRef.current) {
       panzoomRef.current = panzoom(contentRef.current, {
         zoomDoubleClickSpeed: 1,
+        beforeWheel(e) {
+          const isTrackpad = e.deltaY % 1 !== 0;
+          const cmdOrCtrl = navigator.platform.match('Mac')
+            ? e.metaKey
+            : e.ctrlKey;
+
+          return !(cmdOrCtrl || isTrackpad);
+        },
         beforeMouseDown: (e) =>
           // @ts-expect-error
           /^(a|input|button)$/i.test(e.target.tagName) ||

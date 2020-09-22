@@ -423,7 +423,6 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Content width',
       docsSite: false,
-      explore: true,
       Example: () => (
         <Box display="flex" alignItems="center" justifyContent="center">
           <DialogCard
@@ -441,7 +440,6 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Xsmall width',
       docsSite: false,
-      explore: true,
       Example: () => (
         <DialogCard
           id="xsmall"
@@ -457,7 +455,6 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Small width',
       docsSite: false,
-      explore: true,
       Example: () => (
         <DialogCard
           id="small"
@@ -473,7 +470,6 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Medium width',
       docsSite: false,
-      explore: true,
       Example: () => (
         <DialogCard
           id="medium"
@@ -489,7 +485,6 @@ const docs: ComponentDocs = {
     {
       label: 'Test: Large width',
       docsSite: false,
-      explore: true,
       Example: () => (
         <DialogCard
           id="large"

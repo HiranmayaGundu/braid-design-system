@@ -88,6 +88,7 @@ const docs: ComponentDocs = {
     },
     {
       label: 'Standard suggestions with automatic selection',
+      explore: false,
       Container,
       Example: ({ id }) => {
         const [value, setValue] = useState<Value>({ text: '' });
@@ -246,6 +247,7 @@ const docs: ComponentDocs = {
     {
       label: 'Standard suggestions with brand background and mobile backdrop',
       storybook: false,
+      explore: false,
       Container,
       background: 'brand',
       Example: ({ id }) => {

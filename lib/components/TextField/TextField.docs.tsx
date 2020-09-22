@@ -170,6 +170,7 @@ const docs: ComponentDocs = {
     },
     {
       label: 'TextField on Brand Background',
+      explore: false,
       background: 'brand',
       Container,
       Example: ({ id, handler }) => (

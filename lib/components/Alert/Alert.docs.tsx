@@ -32,9 +32,82 @@ const docs: ComponentDocs = {
     {
       label: 'Info Alert Inside Card',
       background: 'card',
+      explore: false,
       Example: () => (
         <Alert tone="info">
           <Text>This is an important piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Promote Alert',
+      Example: () => (
+        <Alert tone="promote">
+          <Text>This is a promoted piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Promote Alert Inside Card',
+      background: 'card',
+      explore: false,
+      Example: () => (
+        <Alert tone="promote">
+          <Text>This is a promoted piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Caution Alert',
+      Example: () => (
+        <Alert tone="caution">
+          <Text>This is a cautionary piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Caution Alert Inside Card',
+      background: 'card',
+      explore: false,
+      Example: () => (
+        <Alert tone="caution">
+          <Text>This is a cautionary piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Critical Alert',
+      Example: () => (
+        <Alert tone="critical">
+          <Text>This is a critical piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Critical Alert Inside Card',
+      background: 'card',
+      explore: false,
+      Example: () => (
+        <Alert tone="critical">
+          <Text>This is a critical piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Positive Alert',
+      Example: () => (
+        <Alert tone="positive">
+          <Text>This is a positive piece of information.</Text>
+        </Alert>
+      ),
+    },
+    {
+      label: 'Positive Alert Inside Card',
+      background: 'card',
+      explore: false,
+      Example: () => (
+        <Alert tone="positive">
+          <Text>This is a positive piece of information.</Text>
         </Alert>
       ),
     },
@@ -61,74 +134,6 @@ const docs: ComponentDocs = {
               <Text>Bullet 3</Text>
             </List>
           </Stack>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Promote Alert',
-      Example: () => (
-        <Alert tone="promote">
-          <Text>This is a promoted piece of information.</Text>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Promote Alert Inside Card',
-      background: 'card',
-      Example: () => (
-        <Alert tone="promote">
-          <Text>This is a promoted piece of information.</Text>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Caution Alert',
-      Example: () => (
-        <Alert tone="caution">
-          <Text>This is a cautionary piece of information.</Text>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Caution Alert Inside Card',
-      background: 'card',
-      Example: () => (
-        <Alert tone="caution">
-          <Text>This is a cautionary piece of information.</Text>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Critical Alert',
-      Example: () => (
-        <Alert tone="critical">
-          <Text>This is a critical piece of information.</Text>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Critical Alert Inside Card',
-      background: 'card',
-      Example: () => (
-        <Alert tone="critical">
-          <Text>This is a critical piece of information.</Text>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Positive Alert',
-      Example: () => (
-        <Alert tone="positive">
-          <Text>This is a positive piece of information.</Text>
-        </Alert>
-      ),
-    },
-    {
-      label: 'Positive Alert Inside Card',
-      background: 'card',
-      Example: () => (
-        <Alert tone="positive">
-          <Text>This is a positive piece of information.</Text>
         </Alert>
       ),
     },

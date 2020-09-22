@@ -37,20 +37,31 @@ const DefaultContainer = ({ children }: { children: ReactNode }) => (
   <Fragment>{children}</Fragment>
 );
 
+const COLUMN_SIZE = 5;
+
 const explorableComponents = documentedComponents
   .filter(
-    ({ category, deprecationWarning, explore }) =>
-      category === 'Content' && !deprecationWarning && explore !== false,
+    ({ category, deprecationWarning, explore, name }) =>
+      category !== 'Logic' &&
+      !deprecationWarning &&
+      explore !== false &&
+      name !== 'Box' &&
+      !/hidden/i.test(name),
   )
   .map(({ examples, ...rest }) => ({
     ...rest,
-    examples: examples.filter(
-      ({ docsSite, explore, Example }) =>
-        Example && (explore || (docsSite !== false && explore !== false)),
+    examples: chunk(
+      examples
+        .filter(
+          ({ docsSite, explore, Example }) =>
+            Example && (explore || (docsSite !== false && explore !== false)),
+        )
+        .slice(0, COLUMN_SIZE * 2),
+      COLUMN_SIZE,
     ),
   }));
 
-const rowLength = Math.floor(Math.sqrt(explorableComponents.length)) * 2;
+const rowLength = Math.floor(Math.sqrt(explorableComponents.length));
 const exploreRows = chunk(explorableComponents, rowLength);
 
 const ExampleMask = ({
@@ -74,8 +85,8 @@ const ExampleMask = ({
   useEffect(() => {
     if (elRef.current) {
       setDimensions({
-        w: elRef.current.scrollWidth,
-        h: elRef.current.scrollHeight,
+        w: elRef.current.offsetWidth,
+        h: elRef.current.offsetHeight,
       });
     }
   }, []);
@@ -87,8 +98,8 @@ const ExampleMask = ({
       ref={elRef}
       position="relative"
       style={{
-        height: dimensions.h > 0 ? dimensions.h : undefined,
-        width: dimensions.w > 0 ? dimensions.w : undefined,
+        minHeight: dimensions.h > 0 ? dimensions.h : undefined,
+        minWidth: dimensions.w > 0 ? dimensions.w : undefined,
       }}
     >
       <Box width="full" height="full">
@@ -117,7 +128,7 @@ const ExploreComponent = ({
   const updateCount = history.filter((item) => item.isRecent).length;
 
   return (
-    <Box padding="xxlarge" style={{ width: '800px' }}>
+    <Box padding="xxlarge">
       <Stack space="xxlarge">
         <Inline space="small" alignY="top">
           <Heading level="2">
@@ -148,69 +159,81 @@ const ExploreComponent = ({
             </Box>
           ) : undefined}
         </Inline>
-        {component.examples.map(
-          (
-            {
-              Example,
-              Container = DefaultContainer,
-              background = 'body',
-              ...example
-            },
-            index,
-          ) => {
-            const codeAsString = Example
-              ? reactElementToJSXString(
-                  Example({ id: 'id', handler: noop }), // eslint-disable-line new-cap
-                  {
-                    useBooleanShorthandSyntax: false,
-                    showDefaultProps: false,
-                    showFunctions: false,
-                    filterProps: ['onChange', 'onBlur', 'onFocus'],
-                  },
-                )
-              : '';
+        <Columns space="xlarge">
+          {component.examples.map((exampleChunk, idx) => (
+            <Column key={`${component.name}_${idx}`}>
+              <Stack space="xlarge">
+                {exampleChunk.map(
+                  (
+                    {
+                      Example,
+                      Container = DefaultContainer,
+                      background = 'body',
+                      ...example
+                    },
+                    index,
+                  ) => {
+                    const codeAsString = Example
+                      ? reactElementToJSXString(
+                          Example({ id: 'id', handler: noop }), // eslint-disable-line new-cap
+                          {
+                            useBooleanShorthandSyntax: false,
+                            showDefaultProps: false,
+                            showFunctions: false,
+                            filterProps: ['onChange', 'onBlur', 'onFocus'],
+                          },
+                        )
+                      : '';
 
-            return (
-              <Stack space="medium" key={`${example.label}_${index}`}>
-                <Columns space="medium">
-                  <Column>
-                    <Text tone="secondary">{example.label}</Text>
-                  </Column>
-                  {codeAsString ? (
-                    <Column width="content">
-                      <Text tone="secondary">
-                        <TextLinkButton
-                          hitArea="large"
-                          aria-describedby={`copy-${example.label}_${index}`}
-                          onClick={() => copy(codeAsString)}
-                        >
-                          <CopyIcon />
-                          <Box id={`copy-${example.label}_${index}`}>
-                            <HiddenVisually>Copy to clipboard</HiddenVisually>
-                          </Box>
-                        </TextLinkButton>
-                      </Text>
-                    </Column>
-                  ) : null}
-                </Columns>
-                {Example && (
-                  <ThemedExample background={background}>
-                    <ExampleMask background={background}>
-                      <Container>
-                        <Box style={{ cursor: 'auto' }}>
-                          <Example
-                            id={`${example.label}_${index}`}
-                            handler={noop}
-                          />
-                        </Box>
-                      </Container>
-                    </ExampleMask>
-                  </ThemedExample>
+                    return (
+                      <Stack space="medium" key={`${example.label}_${index}`}>
+                        <Columns space="medium">
+                          <Column>
+                            <Text tone="secondary">{example.label}</Text>
+                          </Column>
+                          {codeAsString ? (
+                            <Column width="content">
+                              <Text tone="secondary">
+                                <TextLinkButton
+                                  hitArea="large"
+                                  aria-describedby={`copy-${example.label}_${index}`}
+                                  onClick={() => copy(codeAsString)}
+                                >
+                                  <CopyIcon />
+                                  <Box id={`copy-${example.label}_${index}`}>
+                                    <HiddenVisually>
+                                      Copy to clipboard
+                                    </HiddenVisually>
+                                  </Box>
+                                </TextLinkButton>
+                              </Text>
+                            </Column>
+                          ) : null}
+                        </Columns>
+                        {Example ? (
+                          <ThemedExample background={background}>
+                            <Box style={{ width: '600px' }}>
+                              <ExampleMask background={background}>
+                                <Container>
+                                  <Box style={{ cursor: 'auto' }}>
+                                    <Example
+                                      id={`${example.label}_${index}`}
+                                      handler={noop}
+                                    />
+                                  </Box>
+                                </Container>
+                              </ExampleMask>
+                            </Box>
+                          </ThemedExample>
+                        ) : null}
+                      </Stack>
+                    );
+                  },
                 )}
               </Stack>
-            );
-          },
-        )}
+            </Column>
+          ))}
+        </Columns>
       </Stack>
     </Box>
   );

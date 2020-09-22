@@ -93,6 +93,7 @@ const docs: ComponentDocs = {
     },
     {
       label: 'Dropdown on Brand Background',
+      explore: false,
       background: 'brand',
       Container,
       Example: ({ id, handler }) => (
