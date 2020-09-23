@@ -1,13 +1,19 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, ComponentProps } from 'react';
 import { Text, TextDropdown } from '../../../..';
 import * as themes from '../../../../lib/themes';
 import { documentedThemes, useThemeSettings } from './ThemeSettingContext';
 
-export function ThemeToggle() {
+export function ThemeToggle({
+  size,
+  weight = 'strong',
+}: {
+  size?: ComponentProps<typeof Text>['size'];
+  weight?: ComponentProps<typeof Text>['weight'];
+}) {
   const { theme, setTheme, ready } = useThemeSettings();
 
   return (
-    <Text weight="strong">
+    <Text weight={weight} size={size}>
       {ready ? (
         <TextDropdown
           id="theme"

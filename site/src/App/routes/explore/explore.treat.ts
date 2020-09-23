@@ -7,7 +7,3 @@ export const loader = style({
   maxHeight: 'min(50vw, 50vh)',
   maxWidth: 'min(50vw, 50vh)',
 });
-
-export const panelDelay = style({
-  transitionDelay: '1500ms',
-});
