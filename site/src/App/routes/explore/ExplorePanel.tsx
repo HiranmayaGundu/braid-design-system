@@ -8,14 +8,12 @@ export const ExplorePanel = ({
   left,
   right,
   top,
-  show = true,
 }: {
   children: ReactNodeNoStrings;
   bottom?: boolean;
   left?: boolean;
   right?: boolean;
   top?: boolean;
-  show?: boolean;
 }) => (
   <Box
     position="fixed"
@@ -26,15 +24,13 @@ export const ExplorePanel = ({
     left={left ? 0 : undefined}
     right={right ? 0 : undefined}
     top={top ? 0 : undefined}
-    transition="fast"
-    opacity={show ? undefined : 0}
     display="flex"
     alignItems="center"
     height="touchable"
     paddingX={['small', 'gutter']}
+    zIndex="sticky"
     style={{
       boxShadow: '0 2px 5px 1px rgba(28,28,28,.2)',
-      transitionDelay: '1500ms',
     }}
   >
     <Inline space="small" alignY="center">

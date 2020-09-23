@@ -18,6 +18,12 @@ import { Explore } from './ExploreComponent';
 import { ExplorePanel } from './ExplorePanel';
 import * as styleRefs from './explore.treat';
 
+type ResetDimensions = {
+  x: number;
+  y: number;
+  scale: number;
+};
+
 const ExplorePage = () => {
   const styles = useStyles(styleRefs);
   const { ready: themeReady } = useThemeSettings();
@@ -26,17 +32,39 @@ const ExplorePage = () => {
   );
 
   const contentRef = useRef<HTMLElement | null>(null);
+  const zoomInRef = useRef<HTMLButtonElement | null>(null);
+  const zoomOutRef = useRef<HTMLButtonElement | null>(null);
   const panzoomRef = useRef<ReturnType<typeof panzoom> | null>(null);
 
   const [zoom, setZoom] = useState(1);
-  const [initialView, setInitialView] = useState<{
-    x: number;
-    y: number;
-    scale: number;
-  } | null>(null);
+  const [
+    resetDimensions,
+    setResetDimensions,
+  ] = useState<ResetDimensions | null>(null);
+
+  const calculateResetDimensions = (
+    contentEl: HTMLElement,
+  ): ResetDimensions => {
+    const screenBuffer = 0.005;
+    const xScale = document.documentElement.clientWidth / contentEl.scrollWidth;
+    const yScale =
+      document.documentElement.clientHeight / contentEl.scrollHeight;
+    const scale = Math.min(xScale, yScale) - screenBuffer;
+
+    return {
+      x:
+        (document.documentElement.clientWidth - contentEl.scrollWidth * scale) /
+        2,
+      y:
+        (document.documentElement.clientHeight -
+          contentEl.scrollHeight * scale) /
+        2,
+      scale,
+    };
+  };
 
   useEffect(() => {
-    if (themeReady && initialView) {
+    if (themeReady && resetDimensions) {
       setStatus('done');
 
       const keyboardZoomHandler = (e: KeyboardEvent) => {
@@ -51,23 +79,33 @@ const ExplorePage = () => {
           e.preventDefault();
           e.stopPropagation();
 
-          if (plus) {
-            zoomIn();
+          if (plus && zoomInRef.current) {
+            zoomInRef.current.focus();
           }
 
-          if (minus) {
-            zoomOut();
+          if (minus && zoomOutRef.current) {
+            zoomOutRef.current.focus();
           }
         }
       };
 
-      document.addEventListener('keydown', keyboardZoomHandler);
+      const resizeHandler = () => {
+        if (contentRef.current && panzoomRef.current) {
+          const dimensions = calculateResetDimensions(contentRef.current);
+          panzoomRef.current.setMinZoom(dimensions.scale);
+          setResetDimensions(dimensions);
+        }
+      };
+
+      window.addEventListener('keydown', keyboardZoomHandler);
+      window.addEventListener('resize', resizeHandler);
 
       return () => {
-        document.removeEventListener('keydown', keyboardZoomHandler);
+        window.removeEventListener('keydown', keyboardZoomHandler);
+        window.removeEventListener('resize', resizeHandler);
       };
     }
-  }, [themeReady, initialView]);
+  }, [themeReady, resetDimensions]);
 
   const zoomOut = () => {
     if (panzoomRef.current) {
@@ -90,37 +128,24 @@ const ExplorePage = () => {
   };
 
   const reset = useCallback(() => {
-    if (panzoomRef.current && initialView) {
-      panzoomRef.current.zoomAbs(0, 0, initialView.scale);
-      panzoomRef.current.moveTo(initialView.x, initialView.y);
+    if (panzoomRef.current && resetDimensions) {
+      panzoomRef.current.zoomAbs(0, 0, resetDimensions.scale);
+      panzoomRef.current.moveTo(resetDimensions.x, resetDimensions.y);
     }
-  }, [initialView]);
+  }, [resetDimensions]);
 
   useEffect(() => {
     if (status !== 'loading' && contentRef.current) {
       const contentEl = contentRef.current;
-      const screenBuffer = 0.005;
-      const xScale =
-        document.documentElement.clientWidth / contentEl.scrollWidth;
-      const yScale =
-        document.documentElement.clientHeight / contentEl.scrollHeight;
-      const initialScale = Math.min(xScale, yScale) - screenBuffer;
-      const initialX =
-        (document.documentElement.clientWidth -
-          contentEl.scrollWidth * initialScale) /
-        2;
-      const initialY =
-        (document.documentElement.clientHeight -
-          contentEl.scrollHeight * initialScale) /
-        2;
+      const dimensions = calculateResetDimensions(contentEl);
 
       panzoomRef.current = panzoom(contentEl, {
         maxZoom: 20,
-        minZoom: initialScale,
+        minZoom: dimensions.scale,
         zoomDoubleClickSpeed: 1,
         beforeMouseDown: (e) =>
           // @ts-expect-error
-          /^(a|input|button)$/i.test(e.target.tagName) ||
+          /^(a|button|select)$/i.test(e.target.tagName) ||
           // @ts-expect-error
           e.target.getAttribute('role') === 'button',
       });
@@ -131,9 +156,9 @@ const ExplorePage = () => {
         }
       });
 
-      panzoomRef.current.zoomAbs(initialX, initialY, initialScale);
+      panzoomRef.current.zoomAbs(dimensions.x, dimensions.y, dimensions.scale);
 
-      setInitialView({ x: initialX, y: initialY, scale: initialScale });
+      setResetDimensions(dimensions);
 
       return () => {
         panzoomRef.current?.dispose();
@@ -151,12 +176,50 @@ const ExplorePage = () => {
     <Box position="fixed" top={0} bottom={0} left={0} right={0}>
       <PageTitle title="Explore" />
 
+      <Box
+        transition="fast"
+        opacity={status === 'done' ? undefined : 0}
+        style={{
+          transitionDelay: '1500ms',
+        }}
+      >
+        <ExplorePanel top right>
+          <ThemeToggle size="small" weight="regular" />
+        </ExplorePanel>
+
+        <ExplorePanel bottom right>
+          <IconButton label="Reset" onClick={reset} keyboardAccessible>
+            {(iconProps) => <IconRefresh {...iconProps} />}
+          </IconButton>
+          <IconButton
+            ref={zoomOutRef}
+            label="Zoom Out"
+            onClick={zoomOut}
+            keyboardAccessible
+          >
+            {(iconProps) => <IconMinus {...iconProps} />}
+          </IconButton>
+          <Text size="small" tone="secondary">
+            {Math.round(zoom * 100)}%
+          </Text>
+          <IconButton
+            ref={zoomInRef}
+            label="Zoom In"
+            onClick={zoomIn}
+            keyboardAccessible
+          >
+            {(iconProps) => <IconAdd {...iconProps} />}
+          </IconButton>
+        </ExplorePanel>
+      </Box>
+
       {/* Components */}
       {status !== 'loading' ? (
         <Box
           transition="fast"
           opacity={status === 'done' ? undefined : 0}
           style={{ cursor: 'move' }}
+          outline="none"
         >
           <Box ref={contentRef} userSelect="none">
             <Explore />
@@ -164,35 +227,21 @@ const ExplorePage = () => {
         </Box>
       ) : null}
 
-      <ExplorePanel bottom right show={status === 'done'}>
-        <IconButton label="Reset" onClick={reset} keyboardAccessible>
-          {(iconProps) => <IconRefresh {...iconProps} />}
-        </IconButton>
-        <IconButton label="Zoom Out" onClick={zoomOut} keyboardAccessible>
-          {(iconProps) => <IconMinus {...iconProps} />}
-        </IconButton>
-        <Text size="small" tone="secondary">
-          {Math.round(zoom * 100)}%
-        </Text>
-        <IconButton label="Zoom In" onClick={zoomIn} keyboardAccessible>
-          {(iconProps) => <IconAdd {...iconProps} />}
-        </IconButton>
-      </ExplorePanel>
-
-      <ExplorePanel top right show={status === 'done'}>
-        <ThemeToggle size="small" weight="regular" />
-      </ExplorePanel>
-
       {/* Loader */}
       <Box
         display="flex"
         alignItems="center"
         justifyContent="center"
-        height="full"
-        width="full"
-        zIndex="modal"
-        opacity={status !== 'done' ? 0 : undefined}
-        pointerEvents={status !== 'done' ? 'none' : undefined}
+        zIndex="sticky"
+        position="fixed"
+        bottom={0}
+        left={0}
+        right={0}
+        top={0}
+        background="body"
+        transition="fast"
+        opacity={status === 'done' ? 0 : undefined}
+        pointerEvents={status === 'done' ? 'none' : undefined}
       >
         <Box className={styles.loader}>
           <Logo iconOnly draw height="100%" width="100%" />
